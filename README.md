@@ -184,33 +184,9 @@ pip install -r requirements.txt
 python manage.py runserver
 ```
 
-### Open in browser
-
-```
-http://127.0.0.1:8000
-```
 
 ---
 
-## 📈 Future Improvements
-
-* Barcode scanning support
-* Export invoices as PDF
-* Email-based invoice system
-* Sales analytics dashboard
-
----
-
-## 📸 Application Screenshots
-
-![Login](screenshots/login.png)
-![Dashboard](screenshots/dashboard.png)
-![Inventory](screenshots/inventory.png)
-![Generate Invoice](screenshots/generate_invoice.png)
-![Invoice](screenshots/invoice.png)
-![Admin Panel](screenshots/admin.png)
-
----
 
 
 
