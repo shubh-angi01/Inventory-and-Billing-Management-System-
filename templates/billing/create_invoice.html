@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Invoice - InvBill Pro{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4">
+    <h1 class="h2 fw-bold">Create New Invoice</h1>
+    <a href="{% url 'invoice_list' %}" class="btn btn-outline-secondary">Back to List</a>
+</div>
+
+<form method="post" id="invoice-form">
+    {% csrf_token %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-0">
+                <div class="card-body">
+                    <label for="customer_name" class="form-label fw-bold">Customer Name</label>
+                    <input type="text" name="customer_name" id="customer_name" class="form-control" required>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 mb-4">
+        <div class="card-header bg-white border-0 py-3">
+            <h5 class="mb-0 fw-bold">Invoice Items</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0" id="items-table">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">Product</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Subtotal</th>
+                            <th class="pe-4"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="items-body">
+                        <!-- Items will be added here -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-4 border-top">
+                <button type="button" class="btn btn-outline-primary btn-sm" id="add-item-btn">+ Add Item</button>
+            </div>
+        </div>
+        <div class="card-footer bg-light py-3">
+            <div class="d-flex justify-content-end align-items-center me-4">
+                <span class="fw-bold me-3">Total Amount:</span>
+                <span class="h4 mb-0 fw-bold text-primary" id="grand-total">$0.00</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-end">
+        <button type="submit" class="btn btn-primary btn-lg px-5">Generate Invoice</button>
+    </div>
+</form>
+
+<template id="item-row-template">
+    <tr>
+        <td class="ps-4">
+            <select name="product_id[]" class="form-select product-select" required>
+                <option value="" disabled selected>Select Product</option>
+                {% for product in products %}
+                    <option value="{{ product.id }}" data-price="{{ product.price }}">{{ product.name }} (${{ product.price }})</option>
+                {% endfor %}
+            </select>
+        </td>
+        <td>
+            <input type="number" name="quantity[]" class="form-control quantity-input" value="1" min="1" required>
+        </td>
+        <td class="unit-price">$0.00</td>
+        <td class="subtotal fw-bold">$0.00</td>
+        <td class="pe-4 text-end">
+            <button type="button" class="btn btn-sm btn-outline-danger remove-item-btn">Remove</button>
+        </td>
+    </tr>
+</template>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const itemsBody = document.getElementById('items-body');
+    const addItemBtn = document.getElementById('add-item-btn');
+    const template = document.getElementById('item-row-template');
+    const grandTotalEl = document.getElementById('grand-total');
+
+    function updateTotals() {
+        let grandTotal = 0;
+        document.querySelectorAll('#items-body tr').forEach(row => {
+            const select = row.querySelector('.product-select');
+            const qtyInput = row.querySelector('.quantity-input');
+            const subtotalEl = row.querySelector('.subtotal');
+            const unitPriceEl = row.querySelector('.unit-price');
+
+            const option = select.options[select.selectedIndex];
+            const price = option ? parseFloat(option.dataset.price || 0) : 0;
+            const qty = parseInt(qtyInput.value || 0);
+            const subtotal = price * qty;
+
+            unitPriceEl.textContent = `$${price.toFixed(2)}`;
+            subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+            grandTotal += subtotal;
+        });
+        grandTotalEl.textContent = `$${grandTotal.toFixed(2)}`;
+    }
+
+    function addRow() {
+        const clone = template.content.cloneNode(true);
+        itemsBody.appendChild(clone);
+        const newRow = itemsBody.lastElementChild;
+        
+        newRow.querySelector('.product-select').addEventListener('change', updateTotals);
+        newRow.querySelector('.quantity-input').addEventListener('input', updateTotals);
+        newRow.querySelector('.remove-item-btn').addEventListener('click', function() {
+            newRow.remove();
+            updateTotals();
+        });
+        
+        updateTotals();
+    }
+
+    addItemBtn.addEventListener('click', addRow);
+    
+    // Add initial row
+    addRow();
+});
+</script>
+{% endblock %}
